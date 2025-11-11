@@ -1,2 +1,2 @@
-# LoveSpectrum-
-Love Spectrum
+# LoveSpectrum
+Love Spectrum Web Application
