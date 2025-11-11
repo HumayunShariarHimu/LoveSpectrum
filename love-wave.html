@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Love Spectrum  Wave Relation</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+<style>
+* {
+  box-sizing: border-box;
+}
+body {
+  font-family: 'Roboto', sans-serif;
+  margin: 0;
+  background: linear-gradient(to bottom right, #ffe6f0, #fff0f5);
+  color: #333;
+  overflow-x: hidden;
+}
+header {
+  text-align: center;
+  padding: 2rem 1rem;
+  background: linear-gradient(135deg, #ff8fb1, #ff5f87);
+  color: #fff;
+  border-bottom-left-radius: 25px;
+  border-bottom-right-radius: 25px;
+}
+header h1 {
+  margin: 0;
+  font-size: 2rem;
+}
+header p {
+  font-size: 1rem;
+  margin-top: 0.5rem;
+}
+#waveLabel {
+  text-align: center;
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin: 1rem 0;
+  color: #d10047;
+  text-shadow: 1px 1px 5px rgba(0,0,0,0.2);
+  padding: 0 1rem;
+}
+canvas {
+  display: block;
+  width: 95%;
+  max-width: 900px;
+  height: auto;
+  margin: 0 auto 1.5rem;
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+}
+.card-container {
+  max-width: 1000px;
+  margin: 1rem auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+  padding: 0 1rem;
+}
+.card {
+  background: #fff;
+  padding: 1rem;
+  border-radius: 15px;
+  box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+  cursor: pointer;
+  text-align: center;
+  transition: transform 0.2s, background 0.3s;
+}
+.card:hover, .card.active {
+  transform: translateY(-5px);
+  background: #ffe1eb;
+  box-shadow: 0 0 15px rgba(255, 80, 120, 0.4);
+}
+.card h3 {
+  margin: 0;
+  color: #d10047;
+  font-size: 1rem;
+}
+.card p {
+  font-size: 0.9rem;
+  margin-top: 0.3rem;
+}
+footer {
+  text-align: center;
+  padding: 1.2rem;
+  color: #fff;
+  background: linear-gradient(135deg, #ff5f87, #ff8fb1);
+  border-top-left-radius: 25px;
+  border-top-right-radius: 25px;
+  font-size: 0.9rem;
+}
+
+/* 🌸 মোবাইলের জন্য অতিরিক্ত স্টাইল */
+@media (max-width: 600px) {
+  header h1 {
+    font-size: 1.6rem;
+  }
+  header p {
+    font-size: 0.9rem;
+  }
+  #waveLabel {
+    font-size: 1rem;
+  }
+  .card {
+    padding: 0.8rem;
+  }
+  .card h3 {
+    font-size: 0.95rem;
+  }
+  .card p {
+    font-size: 0.8rem;
+  }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Love Spectrum</h1>
+  <p>প্রতিটি ভালোবাসার উপাদান নিজস্ব তরঙ্গ ও রঙে জীবন্ত</p>
+</header>
+
+<div id="waveLabel"></div>
+<canvas id="waveCanvas" width="900" height="400"></canvas>
+
+<div class="card-container" id="cards"></div>
+
+<footer>
+  <p>Love Spectrum - Wave । Humayun Shariar Himu</p>
+</footer>
+
+<script>
+const data = {
+  "chemical": {"ডোপামিন":0.9,"অক্সিটোসিন":0.8,"সেরোটোনিন":0.7,"এন্ডোরফিন":0.6},
+  "psychological": {"আবেগগত সংযোগ":0.85,"নির্ভরতা":0.7,"স্ব-উন্নতি প্রেরণা":0.8,"সংঘর্ষ সমাধান দক্ষতা":0.6},
+  "social": {"সম্পর্ক ও পরিবার":0.9,"সংস্কৃতি ও সামাজিক মূল্যবোধ":0.75,"কমিউনিটি সংযোগ":0.65},
+  "personal": {"স্ব-সম্মান":0.85,"সুখ ও মানসিক স্বাস্থ্য":0.9,"ব্যক্তিগত বৃদ্ধি":0.8}
+};
+
+const colors = {};
+const allKeys = [];
+Object.values(data).forEach(cat => allKeys.push(...Object.keys(cat)));
+allKeys.forEach((key, idx)=>{
+  const hue = (idx*45) % 360;
+  colors[key] = `hsl(${hue}, 70%, 50%)`;
+});
+
+const canvas = document.getElementById("waveCanvas");
+const ctx = canvas.getContext("2d");
+const cardsContainer = document.getElementById("cards");
+const label = document.getElementById("waveLabel");
+let highlightedKey = null;
+
+// ✅ Canvas Resize Responsive
+function resizeCanvas() {
+  canvas.width = window.innerWidth > 950 ? 900 : window.innerWidth * 0.9;
+  canvas.height = window.innerWidth < 500 ? 300 : 400;
+  drawWaves();
+}
+window.addEventListener("resize", resizeCanvas);
+
+// 🌸 কার্ড তৈরি
+for (const category in data) {
+  for (const key in data[category]) {
+    const div = document.createElement("div");
+    div.className = "card";
+    div.innerHTML = `<h3>${key}</h3><p>ফ্রিকোয়েন্সি শক্তি ${(data[category][key]*100).toFixed(0)}%</p>`;
+    
+    div.addEventListener("mouseenter", ()=>highlightWave(key, div));
+    div.addEventListener("mouseleave", ()=>removeHighlight());
+    div.addEventListener("touchstart", (e)=>{
+      e.preventDefault();
+      highlightWave(key, div);
+    });
+    div.addEventListener("touchend", (e)=>{
+      e.preventDefault();
+      removeHighlight();
+    });
+    cardsContainer.appendChild(div);
+  }
+}
+
+// 🌊 তরঙ্গ আঁকা
+function drawWaves() {
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  let offsetY = 60;
+  for (const category in data) {
+    for (const key in data[category]) {
+      const intensity = data[category][key];
+      const amplitude = intensity * 30 + 10;
+      const frequency = intensity * 0.03 + 0.02;
+
+      ctx.beginPath();
+      ctx.moveTo(0, offsetY);
+      for (let x=0; x<canvas.width; x++) {
+        const y = offsetY + amplitude * Math.sin(x * frequency * 2 * Math.PI);
+        ctx.lineTo(x, y);
+      }
+
+      if (key === highlightedKey) {
+        ctx.shadowColor = colors[key];
+        ctx.shadowBlur = 20;
+        ctx.strokeStyle = colors[key];
+        ctx.lineWidth = 5;
+      } else {
+        ctx.shadowBlur = 0;
+        ctx.strokeStyle = colors[key];
+        ctx.globalAlpha = highlightedKey ? 0.15 : 0.9;
+        ctx.lineWidth = 2;
+      }
+
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+      offsetY += 30;
+    }
+    offsetY += 20;
+  }
+}
+
+// 🌟 Highlight & Label
+function highlightWave(key, card){
+  highlightedKey = key;
+  document.querySelectorAll(".card").forEach(c=>c.classList.remove("active"));
+  card.classList.add("active");
+  label.innerHTML = `🔆 সক্রিয় তরঙ্গ: <span style="color:${colors[key]}">${key}</span>`;
+  drawWaves();
+}
+
+// ✨ Highlight সরানো
+function removeHighlight(){
+  highlightedKey = null;
+  document.querySelectorAll(".card").forEach(c=>c.classList.remove("active"));
+  label.textContent = "🌈 কোনো উপাদানে স্পর্শ করলে তার তরঙ্গ হাইলাইট হবে";
+  drawWaves();
+}
+
+resizeCanvas(); // প্রাথমিক রেন্ডার
+</script>
+</body>
+</html>
